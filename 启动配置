@@ -1,2 +1,30 @@
 Main class: org.apache.catalina.startup.Bootstrap
 VM options: -Dcatalina.home=catalina-home -Dcatalina.base=catalina-home -Djava.endorsed.dirs=catalina-home/endorsed -Djava.io.tmpdir=catalina-home/temp -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djava.util.logging.config.file=catalina-home/conf/logging.properties
+
+tomcat 分析：
+server 1-》services n
+service 1 -》connectors n
+		  -》engine 1
+Connector 1 -》ProtocolHandler 1
+StandardServer
+	StandardService
+		Container=StandardEngine
+			StandardHost
+				StandardContext
+					ExistingStandardWrapper
+		Connector
+			ProtocolHandler
+				Endpoint
+					ConnectionHandler
+Http11NioProtocol
+Adapter : dapter provides the link between the ProtocolHandler and the connector
+	NioEndpoint 这个一个connector
+		ConnectionHandler
+		NioSelectorPool
+			NioBlockingSelector
+				blockingSelector.open 开启 BlockPoller(一个线程) 并设置Selector
+	Poller 2个线程
+	Acceptor 一个线程
+Acceptor :serverSocket.accept() -->SocketChannel-->NioChannel-->PollerEvent-->events queue (eventCache)
+Poller(包含有一个Selector) 1:queue中取出PollerEvent对象 2:channel以OP_READ事件注册到主Selector 3：可读socket 包装为SocketProcessorBase into Worker thread
+Worker ：执行SocketProcessor.doRun() 判断是否需要三次握手
